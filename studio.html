@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roblox Studio - Boblox</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: #1e1e1e;
+            color: #ffffff;
+            overflow: hidden;
+        }
+
+        /* Studio Header */
+        .studio-header {
+            background: linear-gradient(to right, #2d3748, #1a202c);
+            padding: 8px 16px;
+            border-bottom: 1px solid #4a5568;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .studio-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #e2e8f0;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .header-btn {
+            background: #4a5568;
+            color: #e2e8f0;
+            border: 1px solid #718096;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+
+        .header-btn:hover {
+            background: #718096;
+        }
+
+        .header-btn.primary {
+            background: #3182ce;
+            border-color: #2c5282;
+        }
+
+        .header-btn.primary:hover {
+            background: #2c5282;
+        }
+
+        /* Main Studio Layout */
+        .studio-container {
+            display: flex;
+            height: calc(100vh - 49px);
+        }
+
+        /* Toolbar */
+        .toolbar {
+            width: 48px;
+            background: #2d3748;
+            border-right: 1px solid #4a5568;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 8px 0;
+            gap: 4px;
+        }
+
+        .tool-btn {
+            width: 32px;
+            height: 32px;
+            background: #4a5568;
+            border: 1px solid #718096;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .tool-btn:hover {
+            background: #718096;
+        }
+
+        .tool-btn.active {
+            background: #3182ce;
+            border-color: #2c5282;
+        }
+
+        .tool-btn::after {
+            content: attr(title);
+            position: absolute;
+            left: 100%;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #1a202c;
+            color: #e2e8f0;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+            margin-left: 8px;
+            z-index: 1000;
+        }
+
+        .tool-btn:hover::after {
+            opacity: 1;
+        }
+
+        /* Main Content Area */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Viewport */
+        .viewport {
+            flex: 1;
+            background: #0f1419;
+            position: relative;
+            border-bottom: 1px solid #4a5568;
+        }
+
+        #canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+            background: linear-gradient(180deg, #87ceeb 0%, #98fb98 50%, #daa520 100%);
+        }
+
+        /* Status Bar */
+        .status-bar {
+            height: 24px;
+            background: #2d3748;
+            border-top: 1px solid #4a5568;
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            font-size: 12px;
+            color: #a0aec0;
+        }
+
+        /* Side Panels */
+        .side-panels {
+            width: 320px;
+            background: #1a202c;
+            border-left: 1px solid #4a5568;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            background: #2d3748;
+            border-bottom: 1px solid #4a5568;
+        }
+
+        .tab {
+            padding: 8px 16px;
+            background: transparent;
+            border: none;
+            color: #a0aec0;
+            cursor: pointer;
+            font-size: 12px;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .tab.active {
+            color: #e2e8f0;
+            border-bottom-color: #3182ce;
+        }
+
+        .tab:hover {
+            color: #e2e8f0;
+            background: rgba(255,255,255,0.05);
+        }
+
+        /* Panel Content */
+        .panel-content {
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .panel-section {
+            display: none;
+        }
+
+        .panel-section.active {
+            display: block;
+            height: 100%;
+        }
+
+        /* Explorer */
+        .explorer {
+            padding: 8px;
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        .explorer-item {
+            padding: 4px 8px;
+            margin: 2px 0;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .explorer-item:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .explorer-item.selected {
+            background: rgba(49, 130, 206, 0.2);
+            border-left: 3px solid #3182ce;
+        }
+
+        .item-icon {
+            width: 16px;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+        }
+
+        /* Properties */
+        .properties {
+            padding: 8px;
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        .property-group {
+            margin-bottom: 16px;
+        }
+
+        .property-group-title {
+            font-size: 12px;
+            font-weight: bold;
+            color: #e2e8f0;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .property-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .property-label {
+            flex: 1;
+            font-size: 11px;
+            color: #a0aec0;
+        }
+
+        .property-input {
+            background: #2d3748;
+            border: 1px solid #4a5568;
+            color: #e2e8f0;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            width: 120px;
+        }
+
+        .property-input:focus {
+            outline: none;
+            border-color: #3182ce;
+        }
+
+        /* Toolbox */
+        .toolbox {
+            padding: 8px;
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        .tool-category {
+            margin-bottom: 16px;
+        }
+
+        .category-title {
+            font-size: 12px;
+            font-weight: bold;
+            color: #e2e8f0;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .tool-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 8px;
+            margin: 2px 0;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            transition: all 0.2s;
+        }
+
+        .tool-item:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .tool-item-icon {
+            width: 20px;
+            height: 20px;
+            background: #4a5568;
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        /* Output */
+        .output {
+            padding: 8px;
+            height: 100%;
+            overflow-y: auto;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 11px;
+            line-height: 1.4;
+        }
+
+        .output-line {
+            margin-bottom: 2px;
+            color: #a0aec0;
+        }
+
+        .output-line.error {
+            color: #fc8181;
+        }
+
+        .output-line.warn {
+            color: #fbbf24;
+        }
+
+        .output-line.info {
+            color: #68d391;
+        }
+
+        /* Context Menu */
+        .context-menu {
+            position: absolute;
+            background: #2d3748;
+            border: 1px solid #4a5568;
+            border-radius: 4px;
+            padding: 4px 0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            z-index: 1000;
+            min-width: 150px;
+        }
+
+        .context-item {
+            padding: 6px 12px;
+            cursor: pointer;
+            font-size: 12px;
+            color: #e2e8f0;
+            transition: background 0.2s;
+        }
+
+        .context-item:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .context-separator {
+            height: 1px;
+            background: #4a5568;
+            margin: 4px 0;
+        }
+
+        /* Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+
+        .modal-content {
+            background: #1a202c;
+            border: 1px solid #4a5568;
+            border-radius: 8px;
+            padding: 20px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #e2e8f0;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: #a0aec0;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 0;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-body {
+            margin-bottom: 20px;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+        .modal-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+
+        .modal-btn.primary {
+            background: #3182ce;
+            color: white;
+        }
+
+        .modal-btn.secondary {
+            background: #4a5568;
+            color: #e2e8f0;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .side-panels {
+                width: 280px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .side-panels {
+                display: none;
+            }
+            .toolbar {
+                width: 40px;
+            }
+            .tool-btn {
+                width: 28px;
+                height: 28px;
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Studio Header -->
+    <div class="studio-header">
+        <div class="studio-title">Roblox Studio - Boblox</div>
+        <div class="header-actions">
+            <button class="header-btn" id="file-menu">File</button>
+            <button class="header-btn" id="view-menu">View</button>
+            <button class="header-btn" id="tools-menu">Tools</button>
+            <button class="header-btn primary" id="play-btn">▶ Play</button>
+            <button class="header-btn" id="stop-btn">⏹ Stop</button>
+        </div>
+    </div>
+
+    <!-- Main Studio Container -->
+    <div class="studio-container">
+        <!-- Toolbar -->
+        <div class="toolbar">
+            <div class="tool-btn active" title="Select" id="tool-select">↖</div>
+            <div class="tool-btn" title="Move" id="tool-move">↕</div>
+            <div class="tool-btn" title="Rotate" id="tool-rotate">↻</div>
+            <div class="tool-btn" title="Scale" id="tool-scale">⤢</div>
+            <div class="tool-btn" title="Paint" id="tool-paint">🎨</div>
+            <div class="tool-btn" title="Terrain" id="tool-terrain">🏔</div>
+            <div class="tool-btn" title="Script" id="tool-script">📄</div>
+            <div class="tool-btn" title="Test" id="tool-test">🧪</div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Viewport -->
+            <div class="viewport">
+                <canvas id="canvas"></canvas>
+                
+                <!-- Viewport Controls -->
+                <div style="position: absolute; top: 10px; right: 10px; display: flex; gap: 4px;">
+                    <button class="header-btn" style="font-size: 10px; padding: 4px 8px;" id="zoom-in">+</button>
+                    <button class="header-btn" style="font-size: 10px; padding: 4px 8px;" id="zoom-out">-</button>
+                    <button class="header-btn" style="font-size: 10px; padding: 4px 8px;" id="reset-view">⌂</button>
+                </div>
+            </div>
+
+            <!-- Status Bar -->
+            <div class="status-bar">
+                <span>Ready</span>
+                <span style="margin-left: auto;">Objects: 0 | Scripts: 0 | FPS: 60</span>
+            </div>
+        </div>
+
+        <!-- Side Panels -->
+        <div class="side-panels">
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab active" data-panel="explorer">Explorer</button>
+                <button class="tab" data-panel="properties">Properties</button>
+                <button class="tab" data-panel="toolbox">Toolbox</button>
+                <button class="tab" data-panel="output">Output</button>
+            </div>
+
+            <!-- Panel Content -->
+            <div class="panel-content">
+                <!-- Explorer -->
+                <div class="panel-section active" id="explorer">
+                    <div class="explorer">
+                        <div class="explorer-item selected">
+                            <span class="item-icon">📁</span>
+                            <span>Workspace</span>
+                        </div>
+                        <div class="explorer-item" style="margin-left: 20px;">
+                            <span class="item-icon">📦</span>
+                            <span>Baseplate</span>
+                        </div>
+                        <div class="explorer-item" style="margin-left: 20px;">
+                            <span class="item-icon">📦</span>
+                            <span>SpawnLocation</span>
+                        </div>
+                        <div class="explorer-item">
+                            <span class="item-icon">📁</span>
+                            <span>Lighting</span>
+                        </div>
+                        <div class="explorer-item">
+                            <span class="item-icon">📁</span>
+                            <span>ReplicatedStorage</span>
+                        </div>
+                        <div class="explorer-item">
+                            <span class="item-icon">📁</span>
+                            <span>ServerScriptService</span>
+                        </div>
+                        <div class="explorer-item">
+                            <span class="item-icon">📁</span>
+                            <span>StarterPlayer</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Properties -->
+                <div class="panel-section" id="properties">
+                    <div class="properties">
+                        <div class="property-group">
+                            <div class="property-group-title">Transform</div>
+                            <div class="property-item">
+                                <span class="property-label">Position X</span>
+                                <input type="number" class="property-input" value="0" step="0.1">
+                            </div>
+                            <div class="property-item">
+                                <span class="property-label">Position Y</span>
+                                <input type="number" class="property-input" value="0" step="0.1">
+                            </div>
+                            <div class="property-item">
+                                <span class="property-label">Position Z</span>
+                                <input type="number" class="property-input" value="0" step="0.1">
+                            </div>
+                        </div>
+
+                        <div class="property-group">
+                            <div class="property-group-title">Appearance</div>
+                            <div class="property-item">
+                                <span class="property-label">Color</span>
+                                <input type="color" class="property-input" value="#ff0000" style="width: 60px;">
+                            </div>
+                            <div class="property-item">
+                                <span class="property-label">Transparency</span>
+                                <input type="number" class="property-input" value="0" min="0" max="1" step="0.1">
+                            </div>
+                        </div>
+
+                        <div class="property-group">
+                            <div class="property-group-title">Physics</div>
+                            <div class="property-item">
+                                <span class="property-label">Anchored</span>
+                                <input type="checkbox" class="property-input" style="width: auto;">
+                            </div>
+                            <div class="property-item">
+                                <span class="property-label">Mass</span>
+                                <input type="number" class="property-input" value="1" min="0.1" step="0.1">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Toolbox -->
+                <div class="panel-section" id="toolbox">
+                    <div class="toolbox">
+                        <div class="tool-category">
+                            <div class="category-title">Parts</div>
+                            <div class="tool-item" data-type="part">
+                                <span class="tool-item-icon">📦</span>
+                                <span>Part</span>
+                            </div>
+                            <div class="tool-item" data-type="wedge">
+                                <span class="tool-item-icon">🔺</span>
+                                <span>Wedge</span>
+                            </div>
+                            <div class="tool-item" data-type="ball">
+                                <span class="tool-item-icon">⚽</span>
+                                <span>Ball</span>
+                            </div>
+                            <div class="tool-item" data-type="cylinder">
+                                <span class="tool-item-icon">🌀</span>
+                                <span>Cylinder</span>
+                            </div>
+                        </div>
+
+                        <div class="tool-category">
+                            <div class="category-title">Models</div>
+                            <div class="tool-item" data-type="model">
+                                <span class="tool-item-icon">🏗️</span>
+                                <span>Model</span>
+                            </div>
+                            <div class="tool-item" data-type="character">
+                                <span class="tool-item-icon">👤</span>
+                                <span>Character</span>
+                            </div>
+                        </div>
+
+                        <div class="tool-category">
+                            <div class="category-title">Tools</div>
+                            <div class="tool-item" data-type="tool">
+                                <span class="tool-item-icon">🔧</span>
+                                <span>Tool</span>
+                            </div>
+                            <div class="tool-item" data-type="weapon">
+                                <span class="tool-item-icon">⚔️</span>
+                                <span>Weapon</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Output -->
+                <div class="panel-section" id="output">
+                    <div class="output">
+                        <div class="output-line info">Boblox Studio initialized</div>
+                        <div class="output-line">Physics engine loaded</div>
+                        <div class="output-line">WebAssembly ready</div>
+                        <div class="output-line warn">Warning: Some features require WebAssembly</div>
+                        <div class="output-line">Ready for development</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Context Menu (hidden by default) -->
+    <div class="context-menu" id="context-menu" style="display: none;">
+        <div class="context-item" data-action="copy">Copy</div>
+        <div class="context-item" data-action="paste">Paste</div>
+        <div class="context-item" data-action="duplicate">Duplicate</div>
+        <div class="context-separator"></div>
+        <div class="context-item" data-action="delete">Delete</div>
+        <div class="context-item" data-action="properties">Properties</div>
+    </div>
+
+    <script>
+        // Roblox Studio - Boblox Interface
+        class RobloxStudio {
+            constructor() {
+                this.selectedTool = 'select';
+                this.selectedObject = null;
+                this.objects = [];
+                this.camera = { x: 0, y: 5, z: 15, rotX: 0, rotY: 0 };
+                this.isPlaying = false;
+
+                this.init();
+                this.setupEventListeners();
+                this.createDefaultScene();
+                this.startRenderLoop();
+            }
+
+            init() {
+                this.canvas = document.getElementById('canvas');
+                this.resizeCanvas();
+                this.addOutputMessage('Studio initialized successfully', 'info');
+            }
+
+            setupEventListeners() {
+                // Tab switching
+                document.querySelectorAll('.tab').forEach(tab => {
+                    tab.addEventListener('click', () => {
+                        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                        document.querySelectorAll('.panel-section').forEach(p => p.classList.remove('active'));
+                        
+                        tab.classList.add('active');
+                        document.getElementById(tab.dataset.panel).classList.add('active');
+                    });
+                });
+
+                // Tool selection
+                document.querySelectorAll('.tool-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        this.selectedTool = btn.id.replace('tool-', '');
+                        this.addOutputMessage(`Selected tool: ${this.selectedTool}`, 'info');
+                    });
+                });
+
+                // Header buttons
+                document.getElementById('play-btn').addEventListener('click', () => {
+                    this.startPlayMode();
+                });
+
+                document.getElementById('stop-btn').addEventListener('click', () => {
+                    this.stopPlayMode();
+                });
+
+                // Viewport controls
+                document.getElementById('zoom-in').addEventListener('click', () => {
+                    this.camera.z = Math.max(5, this.camera.z - 2);
+                });
+
+                document.getElementById('zoom-out').addEventListener('click', () => {
+                    this.camera.z = Math.min(50, this.camera.z + 2);
+                });
+
+                document.getElementById('reset-view').addEventListener('click', () => {
+                    this.camera = { x: 0, y: 5, z: 15, rotX: 0, rotY: 0 };
+                });
+
+                // Toolbox items
+                document.querySelectorAll('.tool-item').forEach(item => {
+                    item.addEventListener('click', () => {
+                        this.addObject(item.dataset.type);
+                    });
+                });
+
+                // Explorer items
+                document.querySelectorAll('.explorer-item').forEach(item => {
+                    item.addEventListener('click', () => {
+                        document.querySelectorAll('.explorer-item').forEach(i => i.classList.remove('selected'));
+                        item.classList.add('selected');
+                        this.selectObject(item.textContent.trim());
+                    });
+                });
+
+                // Canvas context menu
+                this.canvas.addEventListener('contextmenu', (e) => {
+                    e.preventDefault();
+                    this.showContextMenu(e.clientX, e.clientY);
+                });
+
+                // Hide context menu on click elsewhere
+                document.addEventListener('click', () => {
+                    document.getElementById('context-menu').style.display = 'none';
+                });
+
+                // Window resize
+                window.addEventListener('resize', () => {
+                    this.resizeCanvas();
+                });
+            }
+
+            createDefaultScene() {
+                // Add baseplate
+                this.addObject('baseplate', { x: 0, y: -1, z: 0, sx: 32, sy: 1, sz: 32 });
+                
+                // Add spawn location
+                this.addObject('spawn', { x: 0, y: 1, z: 0 });
+                
+                this.updateExplorer();
+            }
+
+            addObject(type, position = null) {
+                const obj = {
+                    id: Date.now(),
+                    type: type,
+                    name: `${type}_${this.objects.length + 1}`,
+                    position: position || { x: 0, y: 5, z: 0 },
+                    size: { x: 4, y: 4, z: 4 },
+                    color: '#ff0000',
+                    anchored: type === 'baseplate'
+                };
+
+                this.objects.push(obj);
+                this.addOutputMessage(`Added ${type}: ${obj.name}`, 'info');
+                this.updateExplorer();
+                this.updateStatusBar();
+            }
+
+            selectObject(name) {
+                this.selectedObject = this.objects.find(obj => obj.name === name);
+                this.addOutputMessage(`Selected: ${name}`, 'info');
+            }
+
+            updateExplorer() {
+                const explorer = document.querySelector('.explorer');
+                const workspaceItem = explorer.querySelector('.explorer-item.selected');
+                
+                // Clear existing dynamic items
+                const existingItems = explorer.querySelectorAll('.explorer-item:not(:first-child)');
+                existingItems.forEach(item => item.remove());
+                
+                // Add objects
+                this.objects.forEach(obj => {
+                    const item = document.createElement('div');
+                    item.className = 'explorer-item';
+                    item.style.marginLeft = '20px';
+                    item.innerHTML = `
+                        <span class="item-icon">${this.getObjectIcon(obj.type)}</span>
+                        <span>${obj.name}</span>
+                    `;
+                    item.addEventListener('click', () => {
+                        document.querySelectorAll('.explorer-item').forEach(i => i.classList.remove('selected'));
+                        item.classList.add('selected');
+                        this.selectObject(obj.name);
+                    });
+                    explorer.appendChild(item);
+                });
+            }
+
+            getObjectIcon(type) {
+                const icons = {
+                    'part': '📦',
+                    'wedge': '🔺',
+                    'ball': '⚽',
+                    'cylinder': '🌀',
+                    'baseplate': '🏠',
+                    'spawn': '🎯',
+                    'model': '🏗️',
+                    'character': '👤',
+                    'tool': '🔧',
+                    'weapon': '⚔️'
+                };
+                return icons[type] || '📦';
+            }
+
+            startPlayMode() {
+                this.isPlaying = true;
+                document.getElementById('play-btn').style.display = 'none';
+                document.getElementById('stop-btn').style.display = 'inline-block';
+                this.addOutputMessage('Entered Play Mode', 'info');
+                
+                // Enable physics simulation
+                this.startPhysics();
+            }
+
+            stopPlayMode() {
+                this.isPlaying = false;
+                document.getElementById('play-btn').style.display = 'inline-block';
+                document.getElementById('stop-btn').style.display = 'none';
+                this.addOutputMessage('Exited Play Mode', 'info');
+                
+                // Stop physics simulation
+                this.stopPhysics();
+            }
+
+            startPhysics() {
+                // Initialize physics for dynamic objects
+                this.objects.forEach(obj => {
+                    if (!obj.anchored) {
+                        obj.velocity = { x: 0, y: 0, z: 0 };
+                        obj.physicsEnabled = true;
+                    }
+                });
+            }
+
+            stopPhysics() {
+                // Reset object positions and disable physics
+                this.objects.forEach(obj => {
+                    if (obj.physicsEnabled) {
+                        obj.velocity = { x: 0, y: 0, z: 0 };
+                        obj.physicsEnabled = false;
+                    }
+                });
+            }
+
+            showContextMenu(x, y) {
+                const menu = document.getElementById('context-menu');
+                menu.style.left = x + 'px';
+                menu.style.top = y + 'px';
+                menu.style.display = 'block';
+            }
+
+            addOutputMessage(message, type = 'info') {
+                const output = document.querySelector('.output');
+                const line = document.createElement('div');
+                line.className = `output-line ${type}`;
+                line.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+                output.appendChild(line);
+                output.scrollTop = output.scrollHeight;
+            }
+
+            updateStatusBar() {
+                const statusBar = document.querySelector('.status-bar');
+                statusBar.innerHTML = `
+                    <span>${this.isPlaying ? 'Playing' : 'Editing'}</span>
+                    <span style="margin-left: auto;">Objects: ${this.objects.length} | Scripts: 0 | FPS: 60</span>
+                `;
+            }
+
+            resizeCanvas() {
+                this.canvas.width = this.canvas.clientWidth;
+                this.canvas.height = this.canvas.clientHeight;
+            }
+
+            startRenderLoop() {
+                const render = () => {
+                    this.render();
+                    requestAnimationFrame(render);
+                };
+                render();
+            }
+
+            render() {
+                const gl = this.canvas.getContext('webgl') || this.canvas.getContext('experimental-webgl');
+                if (!gl) return;
+
+                // Clear canvas
+                gl.clearColor(0.5, 0.7, 1.0, 1.0);
+                gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+                // Simple placeholder rendering
+                // In a full implementation, this would render 3D objects
+                this.objects.forEach((obj, index) => {
+                    // Placeholder for 3D rendering
+                    if (this.isPlaying && obj.physicsEnabled) {
+                        // Simulate physics
+                        obj.velocity.y -= 0.098; // Gravity
+                        obj.position.y += obj.velocity.y * 0.016; // Delta time
+
+                        // Ground collision
+                        if (obj.position.y - obj.size.y/2 <= 0) {
+                            obj.position.y = obj.size.y/2;
+                            obj.velocity.y = -obj.velocity.y * 0.8; // Bounce with damping
+                        }
+                    }
+                });
+            }
+        }
+
+        // Initialize Studio
+        document.addEventListener('DOMContentLoaded', () => {
+            new RobloxStudio();
+        });
+    </script>
+</body>
+</html>
