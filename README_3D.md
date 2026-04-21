@@ -12,19 +12,19 @@ A C++ implementation of Roblox physics from 2008 with 3D visualization, shape bu
 - Quaternion-based rotation
 - Ground collision detection with bouncing
 
-### 🎨 3D Renderer (`renderer.cpp`)
+### 3D Renderer (`renderer.cpp`)
 - OpenGL-based real-time visualization
 - Phong lighting model
 - Interactive camera controls
 - **EMBED BUTTON**: Press **E** to save the current scene as a permanent file
 
-### 🛠️ Shape Builder (`shape_builder.cpp`)
+### Shape Builder (`shape_builder.cpp`)
 - Create custom shapes (cube, sphere, cylinder, wedge)
 - Apply materials and textures from library
 - Adjust size, position, color
 - **EMBED shapes individually** as JSON files that persist forever
 
-### 📦 Material Library
+### Material Library
 Built-in materials:
 - BrickRed - Standard red brick
 - BrickBlue - Standard blue brick
