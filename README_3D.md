@@ -1,10 +1,10 @@
-# Roblox 2008 Physics Engine & 3D Viewer
+# the Boblox engine
 
 A C++ implementation of Roblox physics from 2008 with 3D visualization, shape builder, and scene embedding capabilities.
 
 ## Features
 
-### 🎮 Physics Engine (`physics.cpp`)
+### Physics Engine (`physics.cpp`)
 - Realistic gravity and collision detection
 - Anchored parts (static objects)
 - Elasticity and friction simulation
