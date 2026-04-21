@@ -1,0 +1,20 @@
+# Build outputs
+build/
+*.o
+*.a
+
+# Node modules
+node_modules/
+package-lock.json
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# emsdk (large files, already in repo)
+emsdk/llvm/
+emsdk/upstream/
