@@ -24,16 +24,28 @@ struct PhysicsBody {
     }
 
     void integrate(float dt) {
-        // Simple physics integration
-        velocity.y -= 98.1f * dt; // Gravity
+        // Simple physics integration with improved damping
+        float gravity = 98.1f;
+        velocity.y -= gravity * dt;
+        
+        // Apply damping (air resistance)
+        float damping = 0.99f;
+        velocity.x *= damping;
+        velocity.y *= damping;
+        velocity.z *= damping;
+        
         position.x += velocity.x * dt;
         position.y += velocity.y * dt;
         position.z += velocity.z * dt;
 
-        // Ground collision
+        // Ground collision with proper separation
         if (position.y - size.y/2 <= 0) {
             position.y = size.y/2;
             velocity.y = -velocity.y * 0.5f; // Bounce with damping
+            
+            // Apply friction when on ground
+            velocity.x *= 0.95f;
+            velocity.z *= 0.95f;
         }
     }
 };

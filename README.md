@@ -45,3 +45,22 @@ Welcome to Boblox! A revival of Roblox, that is a 2008 full recreation that recr
 - `renderer.cpp` - 3D rendering system
 - `shape_builder.cpp` - Interactive shape creation
 - `physics_wasm.cpp` - WebAssembly physics module
+
+## 🏠 Run Locally
+
+To run the Boblox website locally, use:
+
+```bash
+chmod +x run_local.sh
+./run_local.sh
+```
+
+If port 8000 is busy, the script will automatically try the next available port. You can also specify a port directly:
+
+```bash
+./run_local.sh 8080
+```
+
+Then open the URL shown by the script, for example:
+
+`http://localhost:8000/index.html`

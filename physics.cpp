@@ -147,22 +147,36 @@ public:
         // Linear motion: a = F/m
         acceleration = force / mass;
         velocity = velocity + acceleration * dt;
-        
-        // Apply friction
-        float speed = velocity.magnitude();
-        if (speed > EPSILON) {
-            Vector3D frictionForce = velocity.normalize() * (-friction * mass * 9.81f);
-            velocity = velocity + frictionForce * (dt / mass);
-        }
 
         // Update position
         position = position + velocity * dt;
+
+        // Velocity damping (air resistance + fraction)
+        float damping = 1.0f - (friction * 0.1f + 0.01f); // Clamp damping to reasonable range
+        velocity = velocity * damping;
 
         // Angular motion (simplified)
         angularVelocity = angularVelocity + torque * (dt / (mass * 2.0f));
         
         // Apply angular damping
         angularVelocity = angularVelocity * 0.98f;
+        
+        // Update rotation based on angular velocity
+        float angularSpeed = angularVelocity.magnitude();
+        if (angularSpeed > EPSILON) {
+            Vector3D axis = angularVelocity.normalize();
+            float angle = angularSpeed * dt;
+            
+            // Convert axis-angle to quaternion and multiply
+            float halfAngle = angle / 2.0f;
+            Quaternion deltaQuat(
+                axis.x * std::sin(halfAngle),
+                axis.y * std::sin(halfAngle),
+                axis.z * std::sin(halfAngle),
+                std::cos(halfAngle)
+            );
+            rotation = (deltaQuat * rotation).normalize();
+        }
 
         clearForces();
     }
@@ -203,14 +217,26 @@ public:
             // Bottom of part touches ground
             float bottomY = part.position.y - part.size.y / 2;
             if (bottomY <= groundLevel) {
+                // Separate part from ground (prevent sinking)
                 part.position.y = groundLevel + part.size.y / 2;
                 
                 // Bounce with elasticity
-                part.velocity.y = -part.velocity.y * part.elasticity;
+                if (part.velocity.y < 0) {
+                    part.velocity.y = -part.velocity.y * part.elasticity;
+                    
+                    // Stop small bounces
+                    if (std::abs(part.velocity.y) < 0.1f) {
+                        part.velocity.y = 0;
+                    }
+                }
                 
-                // Stop small bounces
-                if (std::abs(part.velocity.y) < 0.1f) {
-                    part.velocity.y = 0;
+                // Apply friction when on ground
+                Vector3D horizontalVel(part.velocity.x, 0, part.velocity.z);
+                float hSpeed = horizontalVel.magnitude();
+                if (hSpeed > EPSILON) {
+                    float frictionMagnitude = part.friction * 9.81f * 0.5f;
+                    Vector3D frictionForce = horizontalVel.normalize() * (-frictionMagnitude);
+                    part.velocity = part.velocity + frictionForce * 0.016f; // Fixed dt
                 }
             }
         }
@@ -226,9 +252,13 @@ public:
     }
 
     void handlePartCollision(Part& p1, Part& p2) {
-        // Simple collision response
+        // Simple collision response with separation
         Vector3D normal = p2.position - p1.position;
-        normal = normal.normalize();
+        float distance = normal.magnitude();
+        
+        if (distance < EPSILON) return; // Avoid division by zero
+        
+        normal = normal / distance;
 
         // Relative velocity
         Vector3D relVel = p2.velocity - p1.velocity;
@@ -239,12 +269,25 @@ public:
 
         // Calculate impulse
         float avgElasticity = (p1.elasticity + p2.elasticity) / 2;
-        float impulse = -(1 + avgElasticity) * velAlongNormal / (1 / p1.mass + 1 / p2.mass);
+        float totalMassInv = 1.0f / p1.mass + 1.0f / p2.mass;
+        if (totalMassInv < EPSILON) return;
+        
+        float impulse = -(1 + avgElasticity) * velAlongNormal / totalMassInv;
 
         // Apply impulse
         Vector3D impulseVector = normal * impulse;
-        p1.velocity = p1.velocity - impulseVector * (1 / p1.mass);
-        p2.velocity = p2.velocity + impulseVector * (1 / p2.mass);
+        if (!p1.anchored) p1.velocity = p1.velocity - impulseVector * (1.0f / p1.mass);
+        if (!p2.anchored) p2.velocity = p2.velocity + impulseVector * (1.0f / p2.mass);
+        
+        // Separate overlapping objects to prevent sticking
+        float minDist = (p1.size.magnitude() + p2.size.magnitude()) * 0.5f;
+        if (distance < minDist) {
+            float overlap = minDist - distance;
+            Vector3D separation = normal * (overlap / 2.0f + 0.001f);
+            
+            if (!p1.anchored) p1.position = p1.position - separation;
+            if (!p2.anchored) p2.position = p2.position + separation;
+        }
     }
 
     void simulate(float dt) {
